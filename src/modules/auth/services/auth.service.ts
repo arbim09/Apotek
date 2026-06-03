@@ -22,8 +22,8 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<{
     access_token: string;
     refresh_token: string;
-    user: Omit<User, 'password_hash'>;
-    redirect_to: string;
+    user: Omit<User, 'id' | 'password_hash'>;
+    role: string;
   }> {
     // Validate that either email or username is provided
     if (!loginDto.email && !loginDto.username) {
@@ -77,20 +77,12 @@ export class AuthService {
     // Update last login
     await this.usersService.updateLastLogin(user.id);
 
-    // Determine redirect URL based on role
-    const redirectMap = {
-      admin: '/admin/dashboard',
-      apoteker: '/apoteker/dashboard',
-      pemilik: '/pemilik/dashboard',
-    };
-
-    const { password_hash, ...userWithoutPassword } = user;
-
+    const { id, password_hash, ...userWithoutIdAndPassword } = user;
     return {
       access_token,
       refresh_token,
-      user: userWithoutPassword,
-      redirect_to: redirectMap[user.role] || '/dashboard',
+      user: userWithoutIdAndPassword,
+      role: user.role,
     };
   }
 
